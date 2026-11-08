@@ -15,9 +15,11 @@ import logging
 from jinja2 import Template
 import uuid
 import asyncio
+from config import get_mail_settings
 
 # Load environment variables
 load_dotenv()
+mail_settings = get_mail_settings(os.environ)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -36,9 +38,9 @@ app.add_middleware(
 
 # Email configuration
 conf = ConnectionConfig(
-    MAIL_USERNAME=os.getenv("MAIL_USERNAME", "hackfinity.innovation@gmail.com"),
-    MAIL_PASSWORD=os.getenv("MAIL_PASSWORD", "dudv vevw kmkm oqxm"),
-    MAIL_FROM=os.getenv("MAIL_FROM", "hackfinity.innovation@gmail.com"),
+    MAIL_USERNAME=mail_settings["MAIL_USERNAME"],
+    MAIL_PASSWORD=mail_settings["MAIL_PASSWORD"],
+    MAIL_FROM=mail_settings["MAIL_FROM"],
     MAIL_PORT=587,
     MAIL_SERVER="smtp.gmail.com",
     MAIL_STARTTLS=True,
@@ -117,111 +119,31 @@ DEFAULT_TEMPLATE = """
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ subject }}</title>
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f9f9f9;
-        }
-        .container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 25px;
-            text-align: center;
-            border-radius: 8px;
-            margin-bottom: 25px;
-        }
-        .header h1 {
-            margin: 0;
-            font-size: 24px;
-        }
-        .offer {
-            color: #e74c3c;
-            font-weight: bold;
-            font-size: 20px;
-            background: linear-gradient(45deg, #fff3cd, #ffeaa7);
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-            margin: 25px 0;
-            border-left: 4px solid #e74c3c;
-        }
-        .content {
-            font-size: 16px;
-            line-height: 1.8;
-        }
-        .custom-message {
-            background-color: #e8f5e8;
-            padding: 15px;
-            border-radius: 6px;
-            margin: 20px 0;
-            border-left: 4px solid #28a745;
-        }
-        .footer {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-            font-size: 14px;
-            color: #666;
-            text-align: center;
-        }
-        .button {
-            display: inline-block;
-            padding: 12px 30px;
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
-            margin: 20px 0;
-            font-weight: bold;
-        }
+        body { font-family: 'Arial', sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; }
+        .container { background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; text-align: center; border-radius: 8px; margin-bottom: 25px; }
+        .header h1 { margin: 0; font-size: 24px; }
+        .offer { color: #e74c3c; font-weight: bold; font-size: 20px; background: linear-gradient(45deg, #fff3cd, #ffeaa7); padding: 20px; border-radius: 8px; text-align: center; margin: 25px 0; border-left: 4px solid #e74c3c; }
+        .content { font-size: 16px; line-height: 1.8; }
+        .custom-message { background-color: #e8f5e8; padding: 15px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #28a745; }
+        .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 14px; color: #666; text-align: center; }
+        .button { display: inline-block; padding: 12px 30px; background: linear-gradient(45deg, #667eea, #764ba2); color: white; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🎉 Special Offer Just for You!</h1>
-        </div>
-        
+        <div class="header"><h1>🎉 Special Offer Just for You!</h1></div>
         <div class="content">
             <p>Dear <strong>{{ context.name }}</strong>,</p>
-            
             <p>We hope this email finds you well! We're excited to share an exclusive offer with you:</p>
-            
-            <div class="offer">
-                🎁 {{ context.offer }}
-            </div>
-            
-            {% if context.custom_message %}
-            <div class="custom-message">
-                <strong>Personal Message:</strong><br>
-                {{ context.custom_message }}
-            </div>
-            {% endif %}
-            
+            <div class="offer">🎁 {{ context.offer }}</div>
+            {% if context.custom_message %}<div class="custom-message"><strong>Personal Message:</strong><br>{{ context.custom_message }}</div>{% endif %}
             <p>This offer is personalized just for you. Don't miss out on this amazing opportunity!</p>
-            
             <p>To take advantage of this offer, simply reply to this email or contact us directly.</p>
-            
             <p>Thank you for being a valued customer!</p>
-            
-            <p>Best regards,<br>
-            <strong>The Team</strong></p>
+            <p>Best regards,<br><strong>The Team</strong></p>
         </div>
-        
-        <div class="footer">
-            <p>📧 This email was sent with our Automatic Email Sender</p>
-            <p>⏰ Sent on: {{ current_time }}</p>
-        </div>
+        <div class="footer"><p>📧 This email was sent with our Automatic Email Sender</p><p>⏰ Sent on: {{ current_time }}</p></div>
     </div>
 </body>
 </html>
@@ -236,35 +158,27 @@ async def render_email_template(template_str: str, context: Dict[str, Any]) -> s
         return template.render(context)
     except Exception as e:
         logger.error(f"Template rendering error: {e}")
-        # Return simple fallback
         return f"""
-        <html>
-        <body>
+        <html><body>
             <h2>Hello {context.get('context', {}).get('name', 'Valued Customer')}</h2>
             <p>Special Offer: {context.get('context', {}).get('offer', 'Contact us for details')}</p>
             <p>Best regards,<br>The Team</p>
-        </body>
-        </html>
+        </body></html>
         """
 
 async def send_personalized_email(recipient: str, subject: str, email_body: str) -> bool:
     """Send a personalized email with custom body content"""
     try:
-        # Create message with plain text/HTML body
         message = MessageSchema(
             subject=subject,
             recipients=[recipient],
             body=email_body,
             subtype="html" if "<" in email_body and ">" in email_body else "plain"
         )
-        
-        # Send email
         fm = FastMail(conf)
         await fm.send_message(message)
-        
         logger.info(f"Personalized email sent successfully to {recipient}")
         return True
-        
     except Exception as e:
         logger.error(f"Failed to send personalized email to {recipient}: {e}")
         return False
@@ -272,30 +186,21 @@ async def send_personalized_email(recipient: str, subject: str, email_body: str)
 async def send_single_email(recipient: str, subject: str, context: EmailContext, template: str = "") -> bool:
     """Send a single email"""
     try:
-        # Use custom template or default
         email_template = template if template.strip() else DEFAULT_TEMPLATE
-        
-        # Render template
         html_content = await render_email_template(email_template, {
             'subject': subject,
             'context': context.dict()
         })
-        
-        # Create message
         message = MessageSchema(
             subject=subject,
             recipients=[recipient],
             body=html_content,
             subtype="html"
         )
-        
-        # Send email
         fm = FastMail(conf)
         await fm.send_message(message)
-        
         logger.info(f"Email sent successfully to {recipient}")
         return True
-        
     except Exception as e:
         logger.error(f"Failed to send email to {recipient}: {e}")
         return False
@@ -303,21 +208,15 @@ async def send_single_email(recipient: str, subject: str, context: EmailContext,
 async def send_bulk_emails(recipients: List[str], subject: str, contexts: List[EmailContext], template: str = "") -> List[Dict]:
     """Send bulk emails with individual contexts"""
     results = []
-    
     for i, recipient in enumerate(recipients):
-        # Use corresponding context or first one as default
         context = contexts[i] if i < len(contexts) else contexts[0]
-        
         success = await send_single_email(recipient, subject, context, template)
         results.append({
             "recipient": recipient,
             "success": success,
             "context": context.dict()
         })
-        
-        # Add small delay to avoid overwhelming SMTP server
         await asyncio.sleep(0.5)
-    
     return results
 
 # Scheduled email function
@@ -325,8 +224,6 @@ async def scheduled_email_job(recipient: str, subject: str, context: EmailContex
     """Job function for scheduled emails"""
     try:
         success = await send_single_email(recipient, subject, context, template)
-        
-        # Log to database
         if db is not None:
             await db.email_logs.insert_one({
                 "job_id": job_id,
@@ -337,9 +234,7 @@ async def scheduled_email_job(recipient: str, subject: str, context: EmailContex
                 "success": success,
                 "type": "scheduled"
             })
-        
         logger.info(f"Scheduled email job {job_id} completed for {recipient}")
-        
     except Exception as e:
         logger.error(f"Scheduled email job {job_id} failed: {e}")
 
@@ -353,7 +248,7 @@ async def root():
             <h1>🚀 Automatic Email Sender API</h1>
             <p>Your Gmail SMTP email sender is running!</p>
             <p><a href="/docs">📚 View API Documentation</a></p>
-            <p><strong>Configured Email:</strong> hackfinity.innovation@gmail.com</p>
+            <p>Email configuration is read from server-side environment settings.</p>
         </body>
     </html>
     """
@@ -367,8 +262,6 @@ async def send_personalized_email_now(request: PersonalizedEmailRequest):
             request.subject,
             request.email_body
         )
-        
-        # Log to database
         if db is not None:
             await db.email_logs.insert_one({
                 "recipient": request.recipient,
@@ -378,12 +271,9 @@ async def send_personalized_email_now(request: PersonalizedEmailRequest):
                 "success": success,
                 "type": "personalized_immediate"
             })
-        
         if success:
             return {"status": "success", "message": f"Personalized email sent successfully to {request.recipient}"}
-        else:
-            raise HTTPException(status_code=500, detail="Failed to send personalized email")
-            
+        raise HTTPException(status_code=500, detail="Failed to send personalized email")
     except Exception as e:
         logger.error(f"Send personalized email error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -393,14 +283,10 @@ async def schedule_personalized_email_endpoint(request: PersonalizedEmailRequest
     """Schedule a personalized email with custom body content for later delivery"""
     if not request.schedule_time:
         raise HTTPException(status_code=400, detail="Schedule time is required")
-    
     if request.schedule_time <= datetime.now():
         raise HTTPException(status_code=400, detail="Schedule time must be in the future")
-    
     job_id = f"personalized_email_{uuid.uuid4().hex[:8]}"
-    
     try:
-        # Schedule the job
         scheduler.add_job(
             send_personalized_email,
             trigger="date",
@@ -409,8 +295,6 @@ async def schedule_personalized_email_endpoint(request: PersonalizedEmailRequest
             id=job_id,
             replace_existing=True
         )
-        
-        # Store in database
         if db is not None:
             await db.scheduled_emails.insert_one({
                 "job_id": job_id,
@@ -422,13 +306,11 @@ async def schedule_personalized_email_endpoint(request: PersonalizedEmailRequest
                 "created_at": datetime.utcnow(),
                 "type": "personalized"
             })
-        
         return {
             "status": "success",
             "message": f"Personalized email scheduled successfully for {request.schedule_time}",
             "job_id": job_id
         }
-        
     except Exception as e:
         logger.error(f"Schedule personalized email error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -443,8 +325,6 @@ async def send_email_now(request: SingleEmailRequest):
             request.context,
             request.template
         )
-        
-        # Log to database
         if db is not None:
             await db.email_logs.insert_one({
                 "recipient": request.recipient,
@@ -454,12 +334,9 @@ async def send_email_now(request: SingleEmailRequest):
                 "success": success,
                 "type": "immediate"
             })
-        
         if success:
             return {"status": "success", "message": f"Email sent successfully to {request.recipient}"}
-        else:
-            raise HTTPException(status_code=500, detail="Failed to send email")
-            
+        raise HTTPException(status_code=500, detail="Failed to send email")
     except Exception as e:
         logger.error(f"Send email error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -474,8 +351,6 @@ async def send_bulk_email_now(request: BulkEmailRequest):
             request.contexts,
             request.template
         )
-        
-        # Log to database
         if db is not None:
             await db.email_logs.insert_one({
                 "recipients": request.recipients,
@@ -485,16 +360,13 @@ async def send_bulk_email_now(request: BulkEmailRequest):
                 "results": results,
                 "type": "bulk_immediate"
             })
-        
         successful = sum(1 for r in results if r["success"])
         total = len(results)
-        
         return {
             "status": "success",
             "message": f"Bulk email completed: {successful}/{total} sent successfully",
             "results": results
         }
-        
     except Exception as e:
         logger.error(f"Bulk email error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -504,14 +376,10 @@ async def schedule_email_endpoint(request: SingleEmailRequest):
     """Schedule a single email for later delivery"""
     if not request.schedule_time:
         raise HTTPException(status_code=400, detail="Schedule time is required")
-    
     if request.schedule_time <= datetime.now():
         raise HTTPException(status_code=400, detail="Schedule time must be in the future")
-    
     job_id = f"email_{uuid.uuid4().hex[:8]}"
-    
     try:
-        # Schedule the job
         scheduler.add_job(
             scheduled_email_job,
             trigger="date",
@@ -520,8 +388,6 @@ async def schedule_email_endpoint(request: SingleEmailRequest):
             id=job_id,
             replace_existing=True
         )
-        
-        # Store in database
         if db is not None:
             await db.scheduled_emails.insert_one({
                 "job_id": job_id,
@@ -534,13 +400,11 @@ async def schedule_email_endpoint(request: SingleEmailRequest):
                 "created_at": datetime.utcnow(),
                 "type": "single"
             })
-        
         return {
             "status": "success",
             "message": f"Email scheduled successfully for {request.schedule_time}",
             "job_id": job_id
         }
-        
     except Exception as e:
         logger.error(f"Schedule email error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -552,15 +416,10 @@ async def get_scheduled_emails():
         if db is not None:
             cursor = db.scheduled_emails.find({"status": "scheduled"})
             emails = await cursor.to_list(100)
-            
-            # Convert ObjectId to string for JSON serialization
             for email in emails:
                 email["_id"] = str(email["_id"])
-                
             return {"scheduled_emails": emails}
-        else:
-            return {"scheduled_emails": []}
-        
+        return {"scheduled_emails": []}
     except Exception as e:
         logger.error(f"Get scheduled emails error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -572,15 +431,10 @@ async def get_email_logs(limit: int = 50):
         if db is not None:
             cursor = db.email_logs.find().sort("sent_at", -1).limit(limit)
             logs = await cursor.to_list(limit)
-            
-            # Convert ObjectId to string for JSON serialization
             for log in logs:
                 log["_id"] = str(log["_id"])
-                
             return {"logs": logs}
-        else:
-            return {"logs": []}
-        
+        return {"logs": []}
     except Exception as e:
         logger.error(f"Get email logs error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -591,7 +445,7 @@ async def health_check():
     return {
         "status": "healthy",
         "timestamp": datetime.utcnow(),
-        "email_configured": conf.MAIL_USERNAME is not None,
+        "email_configured": bool(conf.MAIL_USERNAME),
         "database_connected": db is not None,
         "scheduler_running": scheduler.running
     }
